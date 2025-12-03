@@ -1,14 +1,17 @@
 import json
 import sqlite3
 from pathlib import Path
-from typing import List, Dict, Union
+from typing import List, Dict
+from collections import Counter
+
+from src.database.repository import RecipeDB
 
 
 # --- Flexible Ingredient Types ---
 # A single item can be a string or a dictionary (e.g., {"item": "..."})
-Item = Union[Dict[str, str], str]
+Item = Dict[str, str] | str
 # An ingredient definition can be a single item or a list of items
-Ingredient = Union[Item, List[Item]]
+Ingredient = Item | List[Item]
 
 
 # --- Helper Functions ---
@@ -147,8 +150,6 @@ def create_database(db_path: str, recipes_path: Path):
         for reason in skipped_files:
             print(f"  - {reason}")
 
-
-from collections import Counter
 
 if __name__ == "__main__":
     script_dir = Path(__file__).resolve().parent
