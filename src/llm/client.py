@@ -1,11 +1,11 @@
 import os
 
-import dotenv
 from dotenv import find_dotenv, load_dotenv
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
-from config_loader import load_config, LLMConfigModel
+from src.config.config_loader import load_config
+
 load_dotenv(find_dotenv())
 
 config = load_config()

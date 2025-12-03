@@ -2,7 +2,8 @@ import pytest
 import os
 import json
 from pathlib import Path
-from mc_recepies import create_database, RecipeDB
+from ..builder import create_database
+from ..repository import RecipeDB
 
 # Defines a test database name used only for tests
 TEST_DB_NAME = "test_recipes.db"

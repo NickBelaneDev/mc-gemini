@@ -2,7 +2,7 @@ import json
 
 from google.genai import types
 from typing import List, Any
-from src.database import get_db
+from src.database.database import get_db
 
 # --- Tool Implementation ---
 # This is the actual Python function that gets executed.

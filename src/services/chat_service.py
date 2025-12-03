@@ -1,7 +1,7 @@
 import time
 from google import genai
 from pydantic import BaseModel
-from src.llm.llm_class import MCGeminiLLM
+from src.llm.client import MCGeminiLLM
 
 
 """Damit wir unsere Minecraft Chats hosten können, brauchen wir einen Backendservice.
