@@ -20,23 +20,23 @@ async def root():
     return {"message": "Welcome to the MC-Gemini API. See /docs for endpoints."}
 
 @app.post("/gemini/chat")
-async def chat_json(request: ChatRequest):
+async def chat_json(player_name: str, prompt: str):
     """
     Receives a chat prompt and returns the response as a JSON array of strings,
     with each string being a line of the response.
     """
-    print(f">> Incoming JSON request: player='{request.player_name}', prompt='{request.prompt}'")
-    response = await GEMINI.chat(request.player_name, request.prompt)
+    print(f">> Incoming JSON request: player='{player_name}', prompt='{prompt}'")
+    response = await GEMINI.chat(player_name, prompt)
     return {"response": response}
 
 @app.post("/gemini/chat/text")
-async def chat_text(request: ChatRequest):
+async def chat_text(player_name: str, prompt: str):
     """
     Receives a chat prompt and returns the response as a single plain text block,
     with lines separated by newline characters.
     """
-    print(f">> Incoming Text request: player='{request.player_name}', prompt='{request.prompt}'")
-    response = await GEMINI.chat(request.player_name, request.prompt)
+    print(f">> Incoming Text request: player='{player_name}', prompt='{prompt}'")
+    response = await GEMINI.chat(player_name, prompt)
     # Join the list of lines into a single string with newlines for the PlainTextResponse
     response_lines = response.split("\n")
     return PlainTextResponse("\n".join(response_lines))
