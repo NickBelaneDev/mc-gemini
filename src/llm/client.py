@@ -68,13 +68,15 @@ async def process_chat_turn(chat, user_prompt: str) -> str:
         The final text response from the LLM after all processing is complete.
     """
     try:
+        if len(chat.history) > 15:
+            print(f"Trimming chat history from {len(chat.history)} to 20 entries.")
+            chat.history = chat.history[-15:]
         response = chat.send_message(user_prompt)
 
         # This loop continues as long as the model requests function calls.
         # It has a safety break after 5 iterations to prevent infinite loops.
         for _ in range(5):  # Max 5 sequential function calls
             part = response.parts[0]
-
             if not part.function_call:
                 # If there's no function call, we have our final text response.
                 break
@@ -85,7 +87,7 @@ async def process_chat_turn(chat, user_prompt: str) -> str:
             print(f"LLM wants to call function: {function_name}({dict(function_call.args)})")
 
             try:
-                # 1. Look up the implementation and call it with the provided arguments.
+                # 1. Look up the implementation and call it with the provided arguments
                 tool_function = tool_registry.implementations[function_name]
                 function_result = tool_function(**dict(function_call.args))
 
