@@ -1,12 +1,22 @@
 from fastapi import FastAPI
 import uvicorn
 
-app = FastAPI()
+from src.config.settings import GEMINI_API_KEY
+from src.services.chat_service import SmartGeminiBackend
 
+app = FastAPI()
+GEMINI = SmartGeminiBackend(GEMINI_API_KEY)
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+@app.post("/gemini/chat")
+async def gemini_chat(player_name: str, prompt: str):
+    print("Starting SmartGeminiBackend test client...")
+    response = await GEMINI.chat(player_name, prompt)
+    return {"response": response}
+
 
 
 if __name__ == "__main__":
