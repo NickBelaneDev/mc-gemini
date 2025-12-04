@@ -56,7 +56,7 @@ class SmartGeminiBackend:
         chat_session = self._get_clean_session(player_name)
         print(f"chat: {player_name=}, \n{prompt=}")
         response = await process_chat_turn(chat_session, prompt)
-
+        print(f"response: {response}")
         self.sessions[player_name]['last_active'] = time.time()
 
         # Split the response by newlines to create separate chat messages.
