@@ -39,7 +39,8 @@ async def chat_text(player_name: str, prompt: str):
     response = await GEMINI.chat(player_name, prompt)
     # Join the list of lines into a single string with newlines for the PlainTextResponse
     response_lines = response.split("\n")
-    print(f"response: {" ".join(response_lines)}")
+    _ = " ".join(response_lines)
+    print(f"response: {_}")
     return PlainTextResponse(" ".join(response_lines))
 
 if __name__ == "__main__":
