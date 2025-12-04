@@ -55,7 +55,7 @@ class MCGeminiLLM:
             return False
 
 
-async def process_chat_turn(chat: types.Chat, user_prompt: str) -> str:
+async def process_chat_turn(chat, user_prompt: str) -> str:
     """
     Processes a single turn of a chat, handling user input and any subsequent
     function calls requested by the model.
