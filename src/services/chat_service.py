@@ -1,21 +1,24 @@
+import asyncio
 import time
 from google import genai
-from pydantic import BaseModel
-from src.llm.client import MCGeminiLLM
 
+from src.config.settings import GEMINI_API_KEY
+from src.llm.client import MCGeminiLLM, process_chat_turn
 
-"""Damit wir unsere Minecraft Chats hosten können, brauchen wir einen Backendservice.
-Dieser überwacht die Chats und entscheidet, ob ein neuer gestartet wird und ob ein Chat vergessen wird.
-Die Chats werden in einem Dictionary gespeichert."""
 class SmartGeminiBackend:
+    """
+    A backend service to host and manage Minecraft chat sessions.
+    It monitors chats, decides when to start a new one, and when to forget an old one.
+    Chat sessions are stored in an in-memory dictionary.
+    """
     def __init__(self, api_key: str):
         self.client = genai.Client(api_key=api_key)
         self.mc_gemini_llm = MCGeminiLLM(self.client)
 
-        # Hier speichern wir: {'SpielerName': {'chat': chat_objekt, 'last_active': zeitstempel}}
+        # We store sessions here: {'player_name': {'chat': chat_object, 'last_active': timestamp}}
         self.sessions = {}
 
-        # Zeit in Sekunden, bis ein Chat vergessen wird (5 Minuten)
+        # Time in seconds until a chat is forgotten (5 minutes)
         self.TIMEOUT_SECONDS = 300
 
     def _get_clean_session(self, player_name: str):
@@ -25,31 +28,32 @@ class SmartGeminiBackend:
             last_active = self.sessions[player_name]['last_active']
 
             if (current_time - last_active) > self.TIMEOUT_SECONDS:
-                print(f"Session für {player_name} abgelaufen. Starte neuen Kontext.")
+                print(f"Session for {player_name} has expired. Starting a new context.")
                 del self.sessions[player_name]
             else:
                 return self.sessions[player_name]['chat']
 
 
         if player_name not in self.sessions:
+            print(f"Creating a new chat for {player_name}...")
             new_chat = self.mc_gemini_llm.get_chat()
-            print(f"Neuer Chat mit {player_name} erstellt!")
 
             self.sessions[player_name] = {
                 'chat': new_chat,
                 'last_active': current_time
             }
+            print(f"New chat for {player_name} created!\n")
 
         return self.sessions[player_name]['chat']
 
-    def chat(self, player_name: str, message: str) -> str:
-        """"""
+    async def chat(self, player_name: str, prompt: str) -> str:
+        """Handles a single chat turn for a given player."""
         chat_session = self._get_clean_session(player_name)
-        response = chat_session.send_message(message)
+
+        response = await process_chat_turn(chat_session, prompt)
 
         self.sessions[player_name]['last_active'] = time.time()
-
-        return response.text
+        return str(response)
 
     def cleanup_memory(self):
         """Clear all inactive chat sessions."""
@@ -61,4 +65,23 @@ class SmartGeminiBackend:
         ]
         for player in to_delete:
             del self.sessions[player]
-            print(f"Inaktive Session von {player} bereinigt.")
+            print(f"Cleaned up inactive session for {player}.")
+
+# A small test function for the chat service.
+async def main():
+    """Main async function to run the chat client for testing."""
+    print("Starting SmartGeminiBackend test client...")
+    gemini = SmartGeminiBackend(GEMINI_API_KEY)
+
+    while True:
+        user_prompt = input("\nYou> ")
+        if user_prompt.lower() in ["exit", "quit"]:
+            break
+        response = await gemini.chat("Player1", user_prompt)
+        print(f"LLM: {response}")
+
+if __name__ == "__main__":
+    # To run an async function from the top level, you use asyncio.run()
+    asyncio.run(main())
+
+        

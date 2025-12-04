@@ -1,5 +1,5 @@
 from google import genai
-from google.genai import types
+from google.genai import types, Client
 from pydantic import BaseModel
 
 # Import only the simple, static configurations from settings
@@ -55,55 +55,57 @@ class MCGeminiLLM:
             return False
 
 
-if __name__ == "__main__":
-    # The MCGeminiLLM class correctly loads the configuration,
-    # including tools, from LLM_CONFIG. No changes are needed there.
-    mc_gemini_llm = MCGeminiLLM(_client)
-    chat = mc_gemini_llm.get_chat()
+async def process_chat_turn(chat: Client.chats, user_prompt: str) -> str:
+    """
+    Processes a single turn of a chat, handling user input and any subsequent
+    function calls requested by the model.
 
-    print("Chat with Gemini. Type 'exit' to end the conversation.")
+    Args:
+        chat: The active chat session object.
+        user_prompt: The user's message.
 
-    while True:
-        user_prompt = input("\n> ")
-        if user_prompt in ["e", "exit"]:
-            break
+    Returns:
+        The final text response from the LLM after all processing is complete.
+    """
+    try:
+        response = chat.send_message(user_prompt)
 
-        try:
-            response = chat.send_message(user_prompt)
+        # This loop continues as long as the model requests function calls.
+        # It has a safety break after 5 iterations to prevent infinite loops.
+        for _ in range(5):  # Max 5 sequential function calls
+            part = response.parts[0]
 
-            # This loop continues as long as the model requests function calls.
-            # It has a safety break after 5 iterations to prevent infinite loops.
-            for _ in range(5):  # Max 5 sequential function calls
-                part = next(part for part in response.parts)
+            if not part.function_call:
+                # If there's no function call, we have our final text response.
+                break
 
-                if not part.function_call:
-                    # If there's no function call, we have our final text response.
-                    break
+            # --- Execute the function call ---
+            function_call = part.function_call
+            function_name = function_call.name
+            print(f"LLM wants to call function: {function_name}({dict(function_call.args)})")
 
-                # --- Execute the function call ---
-                function_call = part.function_call
-                function_name = function_call.name
-                print(f"LLM wants to call function: {function_name}({dict(function_call.args)})")
+            try:
+                # 1. Look up the implementation and call it with the provided arguments.
+                tool_function = tool_registry.implementations[function_name]
+                function_result = tool_function(**dict(function_call.args))
 
-                try:
-                    # 1. Look up the implementation and call it with the provided arguments.
-                    tool_function = tool_registry.implementations[function_name]
-                    function_result = tool_function(**dict(function_call.args))
+                # 2. Send the function's result back to the model.
+                response = chat.send_message(
+                    types.Part(function_response=types.FunctionResponse(
+                        name=function_name,
+                        response={"result": function_result},
+                    ))
+                )
+            except Exception as e:
+                print(f"Error during function call '{function_name}': {e}")
+                # Return the error to the user to avoid getting stuck
+                return f"Error executing tool {function_name}: {e}"
 
-                    # 2. Send the function's result back to the model.
-                    response = chat.send_message(
-                        types.Part(function_response=types.FunctionResponse(
-                            name=function_name,
-                            response={"result": function_result},
-                        ))
-                    )
-                except Exception as e:
-                    print(f"Error during function call '{function_name}': {e}")
-                    break # Exit loop on error
+        # After the loop, return the final text response from the LLM.
+        return response.parts[0].text if response.parts and response.parts[0].text else ""
 
-            # After the loop, print the final text response from the LLM.
-            if response.parts[0].text:
-                print(f"\nLLM: {response.parts[0].text}")
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    except Exception as e:
+        print(f"An error occurred while processing chat turn: {e}")
+        # Re-raise the exception to be handled by the API layer
+        raise
+            

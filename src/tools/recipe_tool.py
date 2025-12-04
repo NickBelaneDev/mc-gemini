@@ -23,7 +23,7 @@ def find_recipes(item_id: str) -> dict[str, list[dict[str, str | None]]]:
     Finds all Minecraft recipes for a specific item.
     In a real application, this would query a database or an external API.
     """
-    print(f"TOOL: Searching for recipes with result_id '{item_id}'...")
+    #print(f"TOOL: Searching for recipes with result_id '{item_id}'...")
     db = get_db()
     recipes = db.find_recipes_by_id(item_id)
     # Mock response for demonstration
