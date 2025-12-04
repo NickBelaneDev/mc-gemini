@@ -47,13 +47,20 @@ class SmartGeminiBackend:
         return self.sessions[player_name]['chat']
 
     async def chat(self, player_name: str, prompt: str) -> str:
-        """Handles a single chat turn for a given player."""
-        chat_session = self._get_clean_session(player_name)
+        """
+        Handles a single chat turn for a given player.
 
+        The response is split into multiple strings, one for each line,
+        to make it suitable for display in Minecraft chat.
+        """
+        chat_session = self._get_clean_session(player_name)
+        print(f"chat: {player_name=}, \n{prompt=}")
         response = await process_chat_turn(chat_session, prompt)
 
         self.sessions[player_name]['last_active'] = time.time()
-        return str(response)
+
+        # Split the response by newlines to create separate chat messages.
+        return response
 
     def cleanup_memory(self):
         """Clear all inactive chat sessions."""
@@ -77,8 +84,11 @@ async def main():
         user_prompt = input("\nYou> ")
         if user_prompt.lower() in ["exit", "quit"]:
             break
-        response = await gemini.chat("Player1", user_prompt)
-        print(f"LLM: {response}")
+        response_lines = await gemini.chat("Player1", user_prompt)
+        
+        # Print each line of the response, simulating how Minecraft would show it.
+        for line in response_lines:
+            print(f"LLM: {line}")
 
 if __name__ == "__main__":
     # To run an async function from the top level, you use asyncio.run()

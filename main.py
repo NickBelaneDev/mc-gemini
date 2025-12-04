@@ -1,23 +1,45 @@
 from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
+from pydantic import BaseModel
 import uvicorn
 
 from src.config.settings import GEMINI_API_KEY
 from src.services.chat_service import SmartGeminiBackend
 
 app = FastAPI()
+# Initialize the backend service as a global instance
 GEMINI = SmartGeminiBackend(GEMINI_API_KEY)
+
+class ChatRequest(BaseModel):
+    """Defines the structure for a chat request body."""
+    player_name: str
+    prompt: str
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Welcome to the MC-Gemini API. See /docs for endpoints."}
 
 @app.post("/gemini/chat")
-async def gemini_chat(player_name: str, prompt: str):
-    print("Starting SmartGeminiBackend test client...")
-    response = await GEMINI.chat(player_name, prompt)
+async def chat_json(request: ChatRequest):
+    """
+    Receives a chat prompt and returns the response as a JSON array of strings,
+    with each string being a line of the response.
+    """
+    print(f">> Incoming JSON request: player='{request.player_name}', prompt='{request.prompt}'")
+    response = await GEMINI.chat(request.player_name, request.prompt)
     return {"response": response}
 
-
+@app.post("/gemini/chat/text")
+async def chat_text(request: ChatRequest):
+    """
+    Receives a chat prompt and returns the response as a single plain text block,
+    with lines separated by newline characters.
+    """
+    print(f">> Incoming Text request: player='{request.player_name}', prompt='{request.prompt}'")
+    response = await GEMINI.chat(request.player_name, request.prompt)
+    # Join the list of lines into a single string with newlines for the PlainTextResponse
+    response_lines = response.split("\n")
+    return PlainTextResponse("\n".join(response_lines))
 
 if __name__ == "__main__":
     # Dieser Block wird nur ausgeführt, wenn das Skript direkt mit `python main.py`

@@ -55,7 +55,7 @@ class MCGeminiLLM:
             return False
 
 
-async def process_chat_turn(chat: Client.chats, user_prompt: str) -> str:
+async def process_chat_turn(chat: types.Chat, user_prompt: str) -> str:
     """
     Processes a single turn of a chat, handling user input and any subsequent
     function calls requested by the model.
@@ -96,6 +96,7 @@ async def process_chat_turn(chat: Client.chats, user_prompt: str) -> str:
                         response={"result": function_result},
                     ))
                 )
+
             except Exception as e:
                 print(f"Error during function call '{function_name}': {e}")
                 # Return the error to the user to avoid getting stuck
