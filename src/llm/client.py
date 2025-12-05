@@ -70,9 +70,9 @@ async def process_chat_turn(chat: types.UserContent, user_prompt: str) -> str:
         The final text response from the LLM after all processing is complete.
     """
     try:
-        if len(chat.history) > 15:
-            print(f"Trimming chat history from {len(chat.history)} to 20 entries.")
-            chat.history = chat.history[-15:]
+        #if len(chat.history) > 15:
+        #    print(f"Trimming chat history from {len(chat.history)} to 20 entries.")
+        #    chat.history = chat.history[-15:]
         response = chat.send_message(user_prompt)
 
         # This loop continues as long as the model requests function calls.
