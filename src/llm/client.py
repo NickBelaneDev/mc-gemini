@@ -1,5 +1,6 @@
 from google import genai
 from google.genai import types, Client
+from google.genai.chats import Chats
 from pydantic import BaseModel
 
 # Import only the simple, static configurations from settings
@@ -36,7 +37,8 @@ class MCGeminiLLM:
         try:
             return self.client.chats.create(
                     model=self.model,
-                    config=self.config
+                    config=self.config,
+                    history=None
                     )
 
         except Exception as e:
@@ -55,7 +57,7 @@ class MCGeminiLLM:
             return False
 
 
-async def process_chat_turn(chat, user_prompt: str) -> str:
+async def process_chat_turn(chat: types.UserContent, user_prompt: str) -> str:
     """
     Processes a single turn of a chat, handling user input and any subsequent
     function calls requested by the model.
