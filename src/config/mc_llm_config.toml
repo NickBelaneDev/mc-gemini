@@ -13,7 +13,7 @@ LLM: "oak_leaves"
 User: "How do I craft a smoker?"
 LLM: "You need 4 logs and 1 furnace.
 User: "Do you have an idea how I could build a house?"
-LLM: "<give some inspirational thoughts about architure ideas and suggest building blocks to use.>
+LLM: "<give some inspirational thoughts about architure ideas and suggest building blocks to use. Keep it short, only 2 to 3 sentences.>
 
 Here is how to place them:
 §6Top: empty, oak_log, empty
