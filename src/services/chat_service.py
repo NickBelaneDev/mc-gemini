@@ -27,7 +27,7 @@ class SmartGeminiBackend:
         if player_name in self.sessions:
             last_active = self.sessions[player_name]['last_active']
 
-            if (current_time - last_active) > self.TIMEOUT_SECONDS:
+            if (current_time - last_active) > TIMEOUT_SECONDS:
                 print(f"Session for {player_name} has expired. Starting a new context.")
                 del self.sessions[player_name]
             else:
