@@ -1,0 +1,65 @@
+
+
+function send_formated_response(p: player, body: text):
+    set {_raw} to {_body} # enthält evtl. "\n"
+    # Falls die API echte Backslash-n liefert, an "\\n" splitten:
+    set {uuid of %{_p}%::_lines::*} to split {_raw} at "\\n"
+    loop {uuid of %{_p}%::_lines::*}:
+        set {_line} to loop-value
+        send colored "%loop-value%" to {_p}
+
+command /askai [<text>]:
+    usage: /askai <prompt>
+    permission: skript.askai
+    permission message: &cDu hast keine Berechtigung für &e/askai&c.
+
+    trigger:
+        set {_prompt} to arg-1
+        if {_prompt} is not set:
+            send "&cBitte gib eine Frage an die KI an."
+            send "&cVerwendung: &e/askai <deine frage>"
+            stop
+
+        set {_uuid} to uuid of player
+        set {_player_name} to name of player
+
+        # URL-Encoding (Reihenfolge wichtig; %% = literales %)
+        set {_enc} to {_prompt}
+        #replace all "%" in {_enc} with "%%25"
+        #replace all "\n" in {_enc} with "%%0A"
+        replace all " " in {_enc} with "%%20"
+        replace all "?" in {_enc} with "%%3F"
+        replace all "&" in {_enc} with "%%26"
+        replace all "=" in {_enc} with "%%3D"
+        replace all "#" in {_enc} with "%%23"
+        replace all "+" in {_enc} with "%%2B"
+        replace all "ä" in {_enc} with "%%C3%%A4"
+        replace all "ö" in {_enc} with "%%C3%%B6"
+        replace all "ü" in {_enc} with "%%C3%%BC"
+        replace all "Ä" in {_enc} with "%%C3%%84"
+        replace all "Ö" in {_enc} with "%%C3%%96"
+        replace all "Ü" in {_enc} with "%%C3%%9C"
+        replace all "ß" in {_enc} with "%%C3%%9F"
+
+        http request builder stored in {_request}:
+            # Wenn dein Server GET erwartet, ändere method unten auf "GET".
+            url: "http://localhost:8000/gemini/chat/text?player_name=%{_player_name}%&prompt=%{_enc}%"
+            method: "POST"
+            timeout: 60 seconds
+            headers:
+                Content-Type: application/json
+
+        send request using {_request}
+
+        set {_body} to body of last response
+
+        
+        if {_body} is not set:
+            send "&cBody ist leer."
+            stop
+
+        send "&6[Gemini]" to player   
+        send_formated_response(player, {_body})
+        send "" to player
+        # Wenn dein Server JSON { "response": "..." } sendet, gib vorerst einfach den Body aus:
+        

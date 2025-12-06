@@ -2,7 +2,7 @@ import asyncio
 import time
 from google import genai
 
-from src.config.settings import GEMINI_API_KEY
+from src.config.settings import GEMINI_API_KEY, TIMEOUT_SECONDS
 from src.llm.client import MCGeminiLLM, process_chat_turn
 
 class SmartGeminiBackend:
@@ -19,7 +19,7 @@ class SmartGeminiBackend:
         self.sessions = {}
 
         # Time in seconds until a chat is forgotten (5 minutes)
-        self.TIMEOUT_SECONDS = 300
+
 
     def _get_clean_session(self, player_name: str):
         current_time = time.time()
@@ -68,7 +68,7 @@ class SmartGeminiBackend:
 
         to_delete = [
             player for player, data in self.sessions.items()
-            if (current_time - data['last_active']) > self.TIMEOUT_SECONDS
+            if (current_time - data['last_active']) > TIMEOUT_SECONDS
         ]
         for player in to_delete:
             del self.sessions[player]

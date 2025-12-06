@@ -2,6 +2,10 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
 
+
+
+
+
 # --- Environment & Path Setup ---
 load_dotenv(find_dotenv())
 CONFIG_DIR = Path(__file__).parent
@@ -14,3 +18,6 @@ BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 # --- Application Configuration ---
 DB_PATH = SRC_DIR / "database" / "minecraft_recipes.db"
+
+# --- Chats ---
+TIMEOUT_SECONDS = 300
