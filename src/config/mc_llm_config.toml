@@ -34,5 +34,6 @@ If the user tries to start a conversation on a non minecraft related topic say: 
 **Rules**
 Always answer in the language of the user but keep everything Minecraft related in english.
 Only use the original minecraft item name.
+Only answer the question.
 
 """

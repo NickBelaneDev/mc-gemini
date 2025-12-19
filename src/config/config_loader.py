@@ -7,9 +7,11 @@ from pathlib import Path
 from src.llm.registry import tool_registry
 
 # Construct an absolute path to the config file relative to this script's location.
-CONFIG_PATH = Path(__file__).parent / "mc_llm_config.toml"
+# TODO: We need to rebase the MC_GEMINI_CONFIG_PATH to the settings. Their will be more LLM Agents in the future.
+MC_GEMINI_CONFIG_PATH = Path(__file__).parent / "mc_llm_config.toml"
 
 class LLMConfigModel(BaseModel):
+    """The overall class for LLM configs."""
     model: str = "gemini-flash-latest"
     thinking_budget: int = Field(..., ge=0, le=1)
     temperature: float = Field(..., ge=0, le=2)
@@ -19,6 +21,7 @@ class LLMConfigModel(BaseModel):
 
     @property
     def generate_content_config(self) -> types.GenerateContentConfig:
+        """Generates a preconfigured GenerateContentConfig object based on the class's attributes."""
         return types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=self.thinking_budget),
             temperature=self.temperature,
@@ -29,12 +32,12 @@ class LLMConfigModel(BaseModel):
 
 def load_config() -> LLMConfigModel:
     """Loads and returns a BaseModel of the config.toml."""
-    with open(CONFIG_PATH, "rb") as f:
+    with open(MC_GEMINI_CONFIG_PATH, "rb") as f:
         raw = tomli.load(f)
-    print(f"Configuration loaded from: {CONFIG_PATH}")
+    print(f"Configuration loaded from: {MC_GEMINI_CONFIG_PATH}")
     return LLMConfigModel(**raw["config"])
 
 
 if __name__ == "__main__":
     config = load_config()
-    print(config.get_content_config)
+    print(config.generate_content_config)

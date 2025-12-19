@@ -24,16 +24,34 @@ class LLMToolModel(BaseModel):
 LLM_CONFIG = load_config()
 
 _gemini_api_key = GEMINI_API_KEY
-# The client gets the API key from the environment variable `GEMINI_API_KEY`.
 _client = genai.Client(api_key=_gemini_api_key)
 
 class MCGeminiLLM:
+    """A wrapper class for the Gemini API client, pre-configured for the Minecraft application.
+
+    This class simplifies interaction with the Gemini model by encapsulating the
+    model name and generation configuration, which are loaded from external files.
+    It provides methods to start new chat sessions or send single-turn requests.
+    """
     def __init__(self, client: genai.Client):
+        """Initializes the MCGeminiLLM instance.
+
+        Args:
+            client: An authenticated `google.genai.Client` instance.
+        """
         self.model: str = LLM_CONFIG.model
         self.config: types.GenerateContentConfig = LLM_CONFIG.generate_content_config
         self.client: genai.Client = client
 
     def get_chat(self):
+        """Creates and returns a new chat session.
+
+        This method initializes a new conversation with the Gemini API using the
+        pre-configured model and generation settings.
+
+        Returns:
+            A `google.genai.chats.Chat` object if successful, otherwise `False`.
+        """
         try:
             return self.client.chats.create(
                     model=self.model,
@@ -45,7 +63,18 @@ class MCGeminiLLM:
             print(f"Failed to create chat!\n{e}")
             return False
 
-    def ask(self, prompt: str):
+    def ask(self, prompt: str) -> types.GenerateContentResponse | bool:
+        """Sends a single, non-conversational request to the model.
+
+        This is useful for one-off questions that do not require conversation history.
+
+        Args:
+            prompt: The user's prompt as a string.
+
+        Returns:
+            A `google.genai.types.GenerateContentResponse` object if successful,
+            otherwise `False`.
+        """
         try:
             return self.client.models.generate_content(
                 model=self.model,
@@ -57,7 +86,8 @@ class MCGeminiLLM:
             return False
 
 
-async def process_chat_turn(chat: types.UserContent, user_prompt: str) -> str:
+async def process_chat_turn(chat: types.UserContent,
+                            user_prompt: str) -> str:
     """
     Processes a single turn of a chat, handling user input and any subsequent
     function calls requested by the model.

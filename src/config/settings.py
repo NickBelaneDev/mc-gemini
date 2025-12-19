@@ -3,9 +3,6 @@ from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
 
 
-
-
-
 # --- Environment & Path Setup ---
 load_dotenv(find_dotenv())
 CONFIG_DIR = Path(__file__).parent
