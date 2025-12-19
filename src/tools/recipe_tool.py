@@ -31,7 +31,6 @@ def find_recipes(item_id: str) -> dict[str, list[dict[str, str | None]]]:
     return {"recipes": formatted_recipes}
 
 # --- Tool Declaration for the LLM ---
-# This is the schema that tells the LLM how to call the function.
 find_recipes_declaration = types.FunctionDeclaration(
     name="find_recipes",
     description="Get all crafting recipes for a specific item ID (e.g., 'minecraft:stick').",
